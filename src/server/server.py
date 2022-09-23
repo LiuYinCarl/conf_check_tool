@@ -8,11 +8,11 @@ import builtins
 import importlib
 import src.config as config
 import src.server.rule_mgr as rule_mgr
-from src.server.base import log_init, debug_log, info_log, warn_log, error_log, clear_log, read_log
+from src.server.base import (log_init, debug_log, info_log, warn_log, 
+    error_log, clear_cache_log, read_log, read_cache_log)
 
-import time
 import json
-from flask import Flask
+from flask import Flask, request
 
 
 def check_config():
@@ -57,22 +57,30 @@ app = Flask(__name__)
 @app.route("/req_rule_group")
 def on_req_rule_group():
     groups = RM.get_groups()
-    msg = json.dumps(groups)
+    data = {"rule_groups": groups}
+    msg = json.dumps(data)
     print(msg)
     return msg
 
-@app.route("/check/<group_name>")
-def on_check_rule(group_name):
-    # clear_log()
-    RM.exec_group(group_name)
-    log = read_log()
-    return log
+@app.route("/check_rule", methods=["POST"])
+def on_check_rule():
+    clear_cache_log()
+    req_params = request.form
+    rule_groups = req_params.get("rule_groups")
+    RM.exec_groups(rule_groups)
+    log = read_cache_log()
+    log_data = {"text_log": log}
+    msg = json.dumps(log_data)
+    print(msg)
+    return msg
 
 @app.route("/req_log")
 def on_req_log():
     log = read_log()
-    print("========= req log: ", log)
-    return log
+    log_data = {"total_log": log}
+    msg = json.dumps(log_data)
+    print(msg)
+    return msg
 
 
 def init():
