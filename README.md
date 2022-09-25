@@ -5,14 +5,18 @@
 
 ## 配置使用环境
 
-1. [必选]修改 `src/config.py`, 将 `DATA_DIR` 改为策划配置表目录.
+1. [必选]修改 `src/config.py`, 将 `SVR_DATA_DIR` 改为策划配置表目录.
 2. [可选]执行 `gen_vscode.py`, 为 VSCode 开发环境生成 `settings.json` 文件中的自动补全和代码分析配置.
 
 
 ## 使用配置检查器
 
-进入 `src/server/` 目录, 执行 `python server.py`. 检测结果会输出到 `src/server/check_config_tables.log`
-文件中.
+进入 `src/server/` 目录, 执行 `python server.py`, 启动配置检查服务器. 然后进入 `src/client/` 目录，执行 `python client.py`, 启动配置检查客户端.
+
+## 客户端截图
+
+![avatar](./pictures/client1.png)
+
 
 ## 开发新的配置检查项
 
@@ -25,7 +29,7 @@
 
 ```python
 # 导入需要检查的配置表
-import SystemUnlock_Table
+import Some_Config_Table
 
 # 检测函数必须使用 @RM.reg_check_rule() 装饰器
 @RM.reg_check_rule()
