@@ -1,7 +1,9 @@
 # 配置检查器
 
 # 要求
->= Python3.5
+
+Python version >= Python3.5
+install pyqt5 requests
 
 ## 配置使用环境
 
