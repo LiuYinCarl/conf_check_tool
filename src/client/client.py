@@ -1,26 +1,27 @@
-import sys
 import os
+import sys
 import logging
 import functools
 import json
+
 import requests
 from PyQt5.QtWidgets import (QMainWindow, QCheckBox, QGroupBox, QHBoxLayout,
-    QWidget, QVBoxLayout, QApplication, QTextEdit, QPushButton, QLineEdit)
+                            QWidget, QVBoxLayout, QApplication, QTextEdit,
+                            QPushButton, QLineEdit)
 from PyQt5.QtGui import QFont, QColor, QTextCursor, QTextCharFormat, QIcon
 
-sys.dont_write_bytecode = True # 不生成 .pyc 文件
-root_dir = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../.."))
+root_dir = os.path.abspath(os.path.join(__file__, "../../.."))
 sys.path.append(root_dir)
-
 import src.config as config
 
 
-RED =    QColor(255, 0, 0)
-ORANGE = QColor(255, 69, 0)
-BLUE =   QColor(0, 0, 139)
-GREEN =  QColor(0, 205, 0)
-DEEP_BLUE = QColor(0, 191, 255)
-GOLD = QColor(238, 201, 0)
+# define some colors
+RED         = QColor(255,   0,   0)
+ORANGE      = QColor(255,  69,   0)
+BLUE        = QColor(  0,   0, 139)
+GREEN       = QColor(  0, 205,   0)
+DEEP_BLUE   = QColor(  0, 191, 255)
+GOLD        = QColor(238, 201,   0)
 
 
 class MainWin(QMainWindow):
@@ -112,8 +113,6 @@ class MainWin(QMainWindow):
         for rule_group in self.rule_groups:
             check_box:QCheckBox = QCheckBox(rule_group)
             check_box.setChecked(False)
-            # wrong method. but don't know why
-            # check_box.stateChanged.connect(lambda cbs=check_box: self._slot_checkbox(cbs))
             check_box.stateChanged.connect(functools.partial(self._slot_checkbox, check_box))
             layout.addWidget(check_box)
             self.check_boxs.append(check_box)
@@ -226,8 +225,6 @@ class MainWin(QMainWindow):
         # 设置"执行检查"按钮可被点击
         self.exec_rule_btn.setEnabled(have_rule_selected)
 
-        # self._slot_text_edit()
-
     def _slot_exec_rule(self, btn:QPushButton):
         rules = []
         for cb in self.check_boxs:
@@ -323,7 +320,7 @@ class MainWin(QMainWindow):
 ###########################################################
 
     def gen_url(self, params:str):
-        url = "http://{}:{}/{}".format(config.SERVER_IP, config.SERVER_PORT, params)
+        url = "http://{}:{}/{}".format(config.CLI_SERVER_IP, config.CLI_SERVER_PORT, params)
         return url
 
     def _svr_connect(self):
@@ -334,7 +331,6 @@ class MainWin(QMainWindow):
         data = json.loads(rsp.text)
         rule_groups = data.get("rule_groups")
         self.rule_groups.extend(rule_groups)
-        # print("_svr_connect: ", rule_groups)
         self.statusbar.showMessage("获取服务器配置完成.", 3000)
 
     def _svr_exec_rules(self, rules:list) -> None:
@@ -347,13 +343,12 @@ class MainWin(QMainWindow):
         self._slot_text_edit()
 
     def _svr_sync_log(self) -> None:
-        url = self.gen_url("req_log")
+        url = self.gen_url("sync_log")
         rsp = requests.get(url)
         data = json.loads(rsp.text)
         for line in data.get("total_log").split("\n"):
             self._append_log(line)
         self._slot_text_edit()
-
 
 
 if __name__ == "__main__":

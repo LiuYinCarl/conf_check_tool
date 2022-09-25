@@ -1,14 +1,16 @@
 import os
 import logging
+from typing import Callable
+
 import src.server.base as base
+import src.common as common
 
-
-@base.Singleton
+@common.Singleton
 class RuleMgr(object):
-    """配置表规则检查器."""
+    """Config table check rules manager."""
     def __init__(self) -> None:
         self.check_rules = {}
-        self.rules = {} # rule_name: module_name
+        self.rules = {} # k:v = rule_name: module_name
 
     def add_rule(self, rule_group_name:str, module_name:str):
         self.rules[rule_group_name] = module_name
@@ -27,24 +29,24 @@ class RuleMgr(object):
                     if rule_name in executed_rule_names: continue
                     executed_rule_names.add(rule_name)
                     try:
-                        info_log("{}".format(rule_name))
+                        base.info_log("{}".format(rule_name))
                         res = func()
                         if not res:
-                            error_log("[EXECUTE FAILED] {}".format(rule_name))
+                            base.error_log("[EXECUTE FAILED] {}".format(rule_name))
                     except Exception as e:
                         logging.exception(e)
 
     def reg_check_rule(self):
         """装饰器，用于注册配置表检查规则."""
-        def decorator(func):
+        def decorator(func:Callable):
             file_name = os.path.normcase(func.__code__.co_filename)
             file_name = os.path.basename(file_name)
             module_name = os.path.splitext(file_name)[0]
             func_name = func.__name__
 
             if not hasattr(func, '__call__'):
-                error_log("{}:{} is not function.".format(module_name, func_name))
-            info_log("[REGIST CHECK RULE] {}:{}".format(module_name, func_name))
+                base.error_log("{}:{} is not function.".format(module_name, func_name))
+            base.info_log("[REGIST CHECK RULE] {}:{}".format(module_name, func_name))
 
             rule_name = "{}:{}".format(module_name, func_name)
             self.check_rules[rule_name] = func
@@ -57,8 +59,8 @@ class RuleMgr(object):
             try:
                 res = func()
                 if not res:
-                    error_log("{}".format(rule_name))
+                    base.error_log("{}".format(rule_name))
                 else:
-                    info_log("{}".format(rule_name))
+                    base.info_log("{}".format(rule_name))
             except Exception as e:
                 logging.exception(e)
